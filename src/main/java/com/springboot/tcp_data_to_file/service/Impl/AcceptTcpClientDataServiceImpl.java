@@ -15,6 +15,9 @@ import java.util.Date;
 
 @Service
 public class AcceptTcpClientDataServiceImpl implements AcceptTcpClientDataService {
+    //文件最大10M
+    //private int MaxFile = 1024*1024*10;
+    private int MaxFile = 10*1024;
     //日期文件路径
     private Date date = new Date();
     public void acceptTcpClientData(Socket socket,byte[] bytes){
@@ -23,11 +26,26 @@ public class AcceptTcpClientDataServiceImpl implements AcceptTcpClientDataServic
 
         String information = String.valueOf(socket);
         String informationIP = information.substring(information.indexOf("/")+1,information.indexOf(",p"));
-        String filePath=System.getProperty("user.dir")+"/logs"+"/"+new SimpleDateFormat("yyyy/MM/dd/").format(date)+informationIP;
+        String filePath=System.getProperty("user.dir")+"/datalogs"+"/"+new SimpleDateFormat("yyyy/MM/dd/").format(date)+informationIP;
         String fileData = "ip:"+informationIP+",data:"+data;
         //新建文件夹
         CreatFileFolder creatFileFolder = new CreatFileFolder();
         creatFileFolder.createTcpAcpetFilefolder(filePath);
+
+        //查看NewWork文件大小并处理
+        File file = new File(filePath+"/nowWork.log");
+        Date date = new Date(); // 获取当前时间
+
+        SimpleDateFormat sdf = new SimpleDateFormat("HH_mm_ss"); // 定义文件名格式
+        String formatDate = sdf.format(date); // 把当前时间以定义的格式 格式化
+        String str = filePath+"/"+formatDate ;
+        String newDateFileName = str + ".log"; // 定义路径
+        if(file.length()>=MaxFile){
+            System.out.println(file);
+            System.out.println(file.renameTo(new File(newDateFileName)));
+            System.out.println(new File(newDateFileName));
+        }
+
         //写入文件
         RoolingFile roolingFile = new RoolingFile();
         roolingFile.writeFile(filePath,fileData);
